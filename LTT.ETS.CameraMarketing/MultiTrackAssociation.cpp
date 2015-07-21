@@ -551,6 +551,11 @@ void TrakerManager::doWork(Mat& frame)
 			tracker->refcAdd1();
 			Rect iniWin = scaleWin(qualified[i],TRACKING_TO_BODYSIZE_RATIO);
 			tracker->addAppTemplate(_frame_set,iniWin);
+			//Kiểm tra đối tượng có trong cửa hàng hay không
+			if(Enviroment::isIn(Point2d(iniWin.x + iniWin.width/2, iniWin.y + iniWin.height/2))){
+				
+			}
+
 			_tracker_list.push_back(tracker);
 			_tracker_count++;	
 		}			

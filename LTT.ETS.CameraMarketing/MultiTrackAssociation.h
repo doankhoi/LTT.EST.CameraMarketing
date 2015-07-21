@@ -6,6 +6,7 @@
 #include "Tracker.h"
 #include "Detector.h"
 #include "ConnectDB.h"
+#include "Enviroment.h"
 
 #include <Windows.h>
 #include <direct.h>
@@ -172,6 +173,5 @@ private:
 	string dateCurrDb;
 	string getCurrentDate();
 	//<<<Kết nối cơ sở dữ liệu
-
 };
 	

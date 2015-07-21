@@ -52,3 +52,14 @@ void Enviroment::drawEnviroment(cv::Mat& frame)
 	//cv::line(frame, EVA_LEFT, EVA_RIGHT, cv::Scalar(255, 0, 0), 2);
 }
 
+bool Enviroment::isIn(Point2d center){
+	double x = center.x;
+	double y = center.y;
+
+	if((x >= TOP_LEFT.x)&&(x <= TOP_RIGHT.x)&&(y >= TOP_LEFT.y)&&(y <= BOTTOM_LEFT.y))
+	{
+		return true;
+	}
+
+	return false;
+}
