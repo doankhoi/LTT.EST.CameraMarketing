@@ -268,7 +268,7 @@ TrakerManager::~TrakerManager()
 }
 
 
-void TrakerManager::doHungarianAlg(const vector<Rect>& detections)
+void TrakerManager::doHungarianAlg(const vector<Rect>& detections) //good
 {
 	_controller.waitList.update();
 
@@ -289,18 +289,18 @@ void TrakerManager::doHungarianAlg(const vector<Rect>& detections)
 	int hp_size=expert_class.size();
 	int dt_size=detections.size();
 
-	if (dt_size*hp_size>0)
+	if (dt_size*hp_size > 0)
 	{
 		Matrix<double> matrix(dt_size, hp_size+dt_size);
-		vector<bool> indicator;
+		//vector<bool> indicator;
 
 		for (int i=0;i<dt_size;i++)
 		{
 			Rect detect_win_GTsize = scaleWin(detections[i],BODYSIZE_TO_DETECTION_RATIO);
-			Rect shrinkWin=scaleWin(detections[i],TRACKING_TO_DETECTION_RATIO);
+			Rect shrinkWin = scaleWin(detections[i],TRACKING_TO_DETECTION_RATIO);
 			list<EnsembleTracker*>::iterator j_tl = expert_class.begin();
 
-			for (int j=0; j<hp_size+dt_size;j++)
+			for (int j=0; j < hp_size+dt_size; j++)
 			{
 				if (j<hp_size)
 				{
@@ -329,7 +329,7 @@ void TrakerManager::doHungarianAlg(const vector<Rect>& detections)
 					j_tl++;
 				}
 				else
-					matrix(i,j)=100000;// dummy
+					matrix(i,j)=100000; //khoảng cách vô cùng
 			}
 		}
 

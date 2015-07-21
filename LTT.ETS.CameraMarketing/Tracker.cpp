@@ -264,7 +264,7 @@ void EnsembleTracker::track(const Mat* frame_set,Mat& occ_map)
 
 	double alpha;
 
-	//Cập nhật lại bán kính
+	//Cập nhật lại bán kính của track
 	alpha = MIN(_phi1_*sqrt(_kf.errorCovPre.at<float>(0,0))/(double)_result_bodysize_temp.width+_phi2_,_phi_max_);
 	_match_radius=alpha*_result_bodysize_temp.width;
 
