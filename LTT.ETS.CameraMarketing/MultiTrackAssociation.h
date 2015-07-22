@@ -22,37 +22,39 @@
 
 #define COUNT_NUM 1000.0
 #define SLIDING_WIN_SIZE 7.2*TIME_WINDOW_SIZE 
-
+#define MIN_TIME_IN 10
+#define MAX_DISTANCE 30
 #define DATABASE_PATH  "D:/IpCam/Database/ETSCameraClientCache.db3"
 
 using namespace cv;
 using namespace std;
 
+typedef struct Waiting
+{
+	int accu;
+	Rect currentWin;
+	Point center;
+	int life_count;
+	Waiting(Rect win)
+		:accu(1),
+		life_count(1),
+		currentWin(win),
+		center((int)(win.x+0.5*win.width),(int)(win.y+0.5*win.height))
+	{
+	}
+}Waiting;
+
 class WaitingList
 {
-	typedef struct Waiting
-	{
-		int accu;
-		Rect currentWin;
-		Point center;
-		int life_count;
-		Waiting(Rect win)
-			:accu(1),
-			life_count(1),
-			currentWin(win),
-			center((int)(win.x+0.5*win.width),(int)(win.y+0.5*win.height))
-		{
-		}
-	}Waiting;
-
+public:
 	list<Waiting> w_list;
 	int life_limit;
 
-public:
 	WaitingList(int life):life_limit(life){}
 	void update();
 	vector<Rect>outputQualified(double thresh);
 	void feed(Rect bodysize_win,double response);
+	double calcDistance(Rect r1, Rect r2);
 };
 
 
@@ -145,7 +147,8 @@ public:
 	{
 		_my_char = c;
 	}	
-
+	//Biến đếm tracker
+	static unsigned int INDEX_CUSTOMER;
 private:	
 	void doHungarianAlg(const vector<Rect>& detections);
 	static bool compareTraGroup(EnsembleTracker* c1,EnsembleTracker* c2)
@@ -173,5 +176,8 @@ private:
 	string dateCurrDb;
 	string getCurrentDate();
 	//<<<Kết nối cơ sở dữ liệu
+
+	Enviroment enviroment;
+	Point2d convertRect2Point(const Rect& _rect);
 };
 	

@@ -17,7 +17,7 @@
 using namespace cv;
 using namespace std;
 
-static string URL = "D:/IpCam/Video/CLIP_20150116-104112.mp4";
+static string URL = "D:/IpCam/Video/CLIP_20150120-131254.mp4";
 //static string URL = "http://tendo5464:CZDmQQeH08@www.i-mcs-ytd.com:57251/video3.mjpg"
 //static string URL = "C:/opencv/sources/samples/gpu/output.avi";
 

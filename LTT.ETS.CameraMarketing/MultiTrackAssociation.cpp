@@ -45,24 +45,70 @@ vector<Rect> WaitingList::outputQualified(double thresh)
 	return ret;
 }
 
+double WaitingList::calcDistance(Rect r1, Rect r2)
+{
+	Point2d p1 = Point2d(r1.x + 0.5*r1.width, r1.y + 0.5*r1.height);
+	Point2d p2 = Point2d(r2.x + 0.5*r2.width, r2.y + 0.5*r2.height);
+	Point2d dis = p2 - p1;
+	double d = sqrt(dis.x*dis.x + dis.y*dis.y) - min(0.5*r1.width, 0.5*r1.height) - min(0.5*r2.width, 0.5*r2.height);
+
+	return max(d , 0.0);
+}
 
 void WaitingList::feed(Rect gt_win,double response)
 {
 	Point center((int)(gt_win.x+0.5*gt_win.width),(int)(gt_win.y+0.5*gt_win.height));
-	for (list<Waiting>::iterator it=w_list.begin();it!=w_list.end();it++)
-	{
-		double x1=center.x;
-		double y1=center.y;
-		double x2=(*it).center.x;
-		double y2=(*it).center.y;
-		double dis = sqrt(pow(x1-x2,2.0)+pow(y1-y2,2.0))*FRAME_RATE;
-		double scale_ratio=(*it).currentWin.width/(double)gt_win.width;
+	//for (list<Waiting>::iterator it=w_list.begin();it!=w_list.end();it++)
+	//{
+	//	double x1=center.x;
+	//	double y1=center.y;
+	//	double x2=(*it).center.x;
+	//	double y2=(*it).center.y;
+	//	double dis = sqrt(pow(x1-x2,2.0)+pow(y1-y2,2.0)); //*FRAME_RATE
+	//	double scale_ratio=(*it).currentWin.width/(double)gt_win.width;
 
-		if (dis < (*it).currentWin.width*2.3 /*&& scale_ratio < 1.1 && scale_ratio > 0.90*/)
+	//	if (dis < (*it).currentWin.width*2.3 /*&& scale_ratio < 1.1 && scale_ratio > 0.90*/)
+	//	{
+	//		(*it).currentWin=gt_win;
+	//		(*it).center=Point((int)(gt_win.x+0.5*gt_win.width),(int)(gt_win.y+0.5*gt_win.height));
+	//		(*it).accu++;
+	//		return;
+	//	}
+	//}
+
+	if(w_list.size() > 0)
+	{
+		list<Waiting>::iterator itbegin = w_list.begin();
+		list<Waiting>::iterator itend = w_list.end();
+		double dis_min = INT_MIN;
+		int idx_min = -1;
+		int idx = 0;
+		for(; itbegin != itend; itbegin++)
 		{
-			(*it).currentWin=gt_win;
-			(*it).center=Point((int)(gt_win.x+0.5*gt_win.width),(int)(gt_win.y+0.5*gt_win.height));
-			(*it).accu++;
+			double dis = calcDistance(gt_win, itbegin->currentWin);
+			if((dis < dis_min) && (dis <= MAX_DISTANCE))
+			{
+				dis_min = dis;
+				idx_min = idx; 
+			}
+
+			idx++;
+		}
+
+		if(idx_min != -1)
+		{
+			itbegin = w_list.begin();
+			idx = 0;
+			while((idx != idx_min) && (itbegin != itend))
+			{
+				itbegin++;
+				idx++;
+			}
+
+			itbegin->currentWin = gt_win;
+			itbegin->accu++;
+			itbegin->center = Point((int)(gt_win.x + 0.5*gt_win.width), (int)(gt_win.y + 0.5*gt_win.height));
+
 			return;
 		}
 	}
@@ -257,14 +303,25 @@ TrakerManager::TrakerManager(Detector* detector,Mat& frame,double thresh_promoti
 	}
 
 	SHOP_CD = (this->connectDb).getShopInfo(db);
+	if(SHOP_CD == "")
+	{
+		cout << "SHOP_CD not available" << endl;
+		system("pause");
+		exit(-1);
+	}
 	//<<< Kết nối database 
 }
 
+unsigned int TrakerManager::INDEX_CUSTOMER = 0;
 
 TrakerManager::~TrakerManager()
 {
 	for (list<EnsembleTracker*>::iterator i=_tracker_list.begin();i!=_tracker_list.end();i++)
 		delete *i;
+
+	sqlite3_close(db);
+	if(db != NULL)
+		delete db;
 }
 
 
@@ -359,8 +416,11 @@ void TrakerManager::doHungarianAlg(const vector<Rect>& detections) //good
 				}
 				j_tl++;
 			}
-			if (!flag )
+			if (!flag ) //Phát hiện không map với bất kỳ expert nào
+			{
 				detection_left.push_back(detections[i]);
+			}
+
 		}
 	}
 	else
@@ -431,8 +491,11 @@ void TrakerManager::doHungarianAlg(const vector<Rect>& detections) //good
 				}
 				j_tl++;
 			}
-			if (!flag )
+
+			if (!flag ) //Trường hợp không map với bất kỳ noice nào
+			{
 				_controller.waitList.feed(scaleWin(detection_left[i],BODYSIZE_TO_DETECTION_RATIO),1.0);
+			}
 		}
 	}
 	//Khởi tạo vị trí
@@ -451,7 +514,7 @@ void TrakerManager::doWork(Mat& frame)
 	_detector->detect(frame_resize);
 
 	Mat bgr,hsv,lab;
- 	frame.copyTo(bgr);
+	frame.copyTo(bgr);
 	cvtColor(frame,hsv,CV_RGB2HSV);
 	cvtColor(frame,lab,CV_RGB2Lab);
 	Mat frame_set[]={bgr,hsv,lab};
@@ -459,7 +522,7 @@ void TrakerManager::doWork(Mat& frame)
 
 	// Khởi tạo bản đồ phân phối
 	_occupancy_map = Mat(frame.rows,frame.cols,CV_8UC1,Scalar(0));
-	
+
 	//Lấy các vùng phát hiện đối tượng
 	vector<Rect> detections = _detector->getDetection();
 	vector<int> det_filter; //Phân loại các phát hiện
@@ -494,13 +557,13 @@ void TrakerManager::doWork(Mat& frame)
 	_controller.calcSuspiciousArea(_tracker_list);
 
 	//Vẽ các phát hiện
-	for (size_t it = 0;it < detections.size();it++)
-	{
-		if (det_filter[it] != BAD)
-			rectangle(frame,detections[it],Scalar(0,0,255),2);
-		else
-			rectangle(frame,detections[it],Scalar(0,0,255),1); //Phát hiện tồi	
-	}
+	//for (size_t it = 0;it < detections.size();it++)
+	//{
+	//	if (det_filter[it] != BAD)
+	//		rectangle(frame,detections[it],Scalar(0,0,255),2);
+	//	else
+	//		rectangle(frame,detections[it],Scalar(0,0,255),1); //Phát hiện tồi	
+	//}
 
 	//Tracking đối với mỗi track và quản lý các template của nó
 	for (list<EnsembleTracker*>::iterator i = _tracker_list.begin(); i != _tracker_list.end();)
@@ -521,9 +584,10 @@ void TrakerManager::doWork(Mat& frame)
 		if (!(*i)->getIsNovice() && (*i)->getTemplateNum() > 0 )
 			rectangle(_occupancy_map,(*i)->getResult(),Scalar(1),-1);
 
-		//Xóa các tracker ra ngoài 
+		//>>>Xóa các tracker ra ngoài vùng ảnh và tính thời gian trong cửa hàng
 		Rect avgWin=(*i)->getResult();
 
+		//Đối tượng ra khỏi khung ảnh
 		if (avgWin.x <= 0 || 
 			avgWin.x+avgWin.width >= _frame_set[0].cols-1 || 
 			avgWin.y <= 0 || 
@@ -534,6 +598,7 @@ void TrakerManager::doWork(Mat& frame)
 			_tracker_list.erase(i++);
 			continue;
 		}		
+		//<<<Xóa các tracker ra ngoài vùng ảnh và tính thời gian trong cửa hàng
 
 		i++;			
 	}
@@ -551,17 +616,21 @@ void TrakerManager::doWork(Mat& frame)
 			tracker->refcAdd1();
 			Rect iniWin = scaleWin(qualified[i],TRACKING_TO_BODYSIZE_RATIO);
 			tracker->addAppTemplate(_frame_set,iniWin);
-			//Kiểm tra đối tượng có trong cửa hàng hay không
-			if(Enviroment::isIn(Point2d(iniWin.x + iniWin.width/2, iniWin.y + iniWin.height/2))){
-				
+			//>>>Kiểm tra đối tượng có trong cửa hàng hay không
+			if(enviroment.isIn(convertRect2Point(qualified[i])))
+			{
+				tracker->setCalcTime(true);
+				time_t current_time;
+				time(&current_time);
+				tracker->setTimeIn(current_time);
 			}
-
+			//<<<Kiểm tra đối tượng có trong cửa hàng hay không
 			_tracker_list.push_back(tracker);
 			_tracker_count++;	
 		}			
 	}
 
-	//Hiện kết quả
+	//>>>Hiện kết quả
 	for (list<EnsembleTracker*>::iterator i=_tracker_list.begin();i!=_tracker_list.end();i++)
 	{
 		(*i)->registerTrackResult();
@@ -584,12 +653,51 @@ void TrakerManager::doWork(Mat& frame)
 				sprintf(buff,"%d",(*i)->getID());
 				string s = buff;
 				putText(frame,s,tx,FONT_HERSHEY_PLAIN , 1.5,COLOR((*i)->getID()),2);
-			}				
+			}	
+
+			//>>> Tính thời gian 
+			Rect result_temp = (*i)->getResult();
+			Rect near_last = (*i)->getRectNearLast();
+
+			//Ra ngoài cửa hàng
+			if(!enviroment.isIn(convertRect2Point(result_temp)) && enviroment.isIn(convertRect2Point(near_last)))
+			{
+				if((*i)->getCalcTime())
+				{
+					(*i)->setCalcTime(false);
+					time_t current_time;
+					time(&current_time);
+					double time_in = difftime(current_time, (*i)->getTimeIn());
+					if(time_in >= MIN_TIME_IN)
+					{
+						cout << "ID = " << (*i)->getID() << endl;
+						INDEX_CUSTOMER++;
+						string strTimeIn = connectDb.convertTimeInOut((*i)->getTimeIn());
+						string strTimeOut = connectDb.convertTimeInOut(current_time);
+						string strCamDate = connectDb.createCAM_DATE(current_time);
+
+						string prefix_customer_cd =connectDb.createDateCustomerCd((*i)->getTimeIn());
+						string code_customer = connectDb.createFormatCustomerId(SHOP_CD, prefix_customer_cd, INDEX_CUSTOMER);
+
+						connectDb.insert_TB_CAM_MARKET_CSMR(this->db, SHOP_CD, strCamDate, code_customer, strTimeIn, strTimeOut, time_in);
+					}
+				}
+			}
+
+			// Vào trong cửa hàng.
+			if(enviroment.isIn(convertRect2Point(result_temp)) && !enviroment.isIn(convertRect2Point(near_last)))
+			{
+				time_t current_time;
+				time(&current_time);
+				(*i)->setTimeIn(current_time);
+				(*i)->setCalcTime(true);
+			}
+			//<<< Tính thời gian
 		}
-
 	}
+	//>>>Hiện kết quả
 
-	// Sắp xếp trên số lượng templa
+	// Sắp xếp trên số lượng template
 	_tracker_list.sort(TrakerManager::compareTraGroup);
 	//_frame_count++;
 }
@@ -657,4 +765,9 @@ int TrakerManager::getTime()
 	strftime(time, sizeof(time) - 1, c, &timeinfo);
 	string time_curr(time);
 	return stoi(time_curr);
+}
+
+Point2d TrakerManager::convertRect2Point(const Rect& _rect)
+{
+	return Point2d(_rect.x + _rect.width*0.5, _rect.y + _rect.height*0.5);
 }

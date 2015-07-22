@@ -20,22 +20,22 @@ public:
 	void resizeFrame(cv::Mat& frame);
 
 	//>>>Bốn điểm của vùng cửa hàng
-	static cv::Point TOP_LEFT;
-	static cv::Point TOP_RIGHT;
-	static cv::Point BOTTOM_LEFT;
-	static cv::Point BOTTOM_RIGHT;
-	static std::vector<cv::Point> POLY_POINT_OF_ROI;
+	cv::Point TOP_LEFT;
+	cv::Point TOP_RIGHT;
+	cv::Point BOTTOM_LEFT;
+	cv::Point BOTTOM_RIGHT;
+	std::vector<cv::Point> POLY_POINT_OF_ROI;
 	//<<<Bốn điểm của vùng cửa hàng
 
 	//>>> Vùng ảnh có thể gây nhiều lỗi
-	static cv::Point EVA_LEFT;
-	static cv::Point EVA_RIGHT;
+	cv::Point EVA_LEFT;
+	cv::Point EVA_RIGHT;
 	//<<<Vùng ảnh có thể gây nhiều lỗi
 
 	//>>>Vùng cửa hàng
-	static cv::Rect ROI;
+	cv::Rect ROI;
 	//<<<Vùng cửa hàng
 
-	bool static isIn(Point2d center);
+	bool isIn(Point2d center);
 };
 

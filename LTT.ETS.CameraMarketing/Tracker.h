@@ -52,7 +52,7 @@ public:
 	//Tính toán vận tốc di chuyển
 	double getVel()
 	{
-		return (abs(_kf.statePost.at<float>(2,0)) + abs(_kf.statePost.at<float>(3,0)))*FRAME_RATE;
+		return (abs(_kf.statePost.at<float>(2,0)) + abs(_kf.statePost.at<float>(3,0)));//*FRAME_RATE
 	}
 
 	void setAddNew(bool b){_added_new=b;}
@@ -119,7 +119,10 @@ public:
 	}
 
 	time_t getTimeIn(){ return _time_in; }
+	void setTimeIn(time_t _t){ this->_time_in = _t;}
 	bool getCalcTime() { return _is_calc_time; }
+	void setCalcTime(bool _calc){ this->_is_calc_time = _calc;}
+	Rect getRectNearLast();
 private:
 
 	void init_kf(Rect win)

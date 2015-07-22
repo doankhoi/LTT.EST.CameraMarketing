@@ -72,6 +72,13 @@ EnsembleTracker::EnsembleTracker(int id,Size body_size,double phi1,double phi2,d
 	}
 
 	_recentHitRecord=Mat::zeros(2, 4*FRAME_RATE, CV_64FC1);
+	
+	//>>>Cài đặt thời gian
+	this->_is_calc_time = false;
+	time_t c;
+	time(&c);
+	this->_time_in = c;
+	//<<<Cài đặt thời gian
 }
 
 EnsembleTracker::~EnsembleTracker()
@@ -274,7 +281,7 @@ void EnsembleTracker::track(const Mat* frame_set,Mat& occ_map)
 		(int)_window_size.width,
 		(int)_window_size.height);
 
-	meanShift(_confidence_map,iniWin,TermCriteria( CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 10, 1 ));
+	//meanShift(_confidence_map,iniWin,TermCriteria( CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 10, 1 ));
 
 	_result_temp = iniWin + Point(_cm_win.x,_cm_win.y);
 	_result_bodysize_temp = scaleWin(_result_temp,1/TRACKING_TO_BODYSIZE_RATIO);
@@ -408,20 +415,30 @@ void EnsembleTracker::registerTrackResult()
 		if (_result_history.size()==1)//tracker mới
 		{
 			init_kf(_result_temp);
-			//_filter_result_history.push_back(_result_temp);
-		}
-		//else
-		//{
-			//Point center((int)_kf.statePost.at<float>(0,0),(int)_kf.statePost.at<float>(1,0));
-			//_filter_result_history.push_back(Rect((int)(center.x-0.5*_result_temp.width),(int)(center.y-0.5*_result_temp.height),_result_temp.width,_result_temp.height));
-		//}									
+		}	
 	}
 	else
 	{
-		//Point center((int)_kf.statePost.at<float>(0,0),(int)_kf.statePost.at<float>(1,0));
-		//Rect lastWin=_filter_result_history.back();
-		//Rect win=Rect((int)(center.x-0.5*_result_temp.width),(int)(center.y-0.5*_result_temp.height),_result_temp.width,_result_temp.height);
-		//_filter_result_history.push_back(win);
-		_result_history.push_back(_result_temp);//****************
+		_result_history.push_back(_result_temp);
 	}		
 }	
+
+Rect EnsembleTracker::getRectNearLast()
+{
+	if(_result_history.size() <= 1)
+		return _result_temp;
+
+	vector<Rect>::iterator itbegin = _result_history.begin();
+	vector<Rect>::iterator itend = _result_history.end();
+
+	while(itbegin != itend)
+	{
+		if(((itbegin + 1) == itend ))
+		{
+			return *(itbegin -1);
+		}
+		itbegin++;
+	}
+
+	return _result_history.back();
+}
