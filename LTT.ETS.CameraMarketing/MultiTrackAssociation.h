@@ -22,9 +22,6 @@
 
 #define COUNT_NUM 1000.0
 #define SLIDING_WIN_SIZE 7.2*TIME_WINDOW_SIZE 
-#define MIN_TIME_IN 10
-#define MAX_DISTANCE 30
-#define DATABASE_PATH  "D:/IpCam/Database/ETSCameraClientCache.db3"
 
 using namespace cv;
 using namespace std;

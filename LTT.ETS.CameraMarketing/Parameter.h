@@ -13,4 +13,7 @@
 //Tham so khung hinh
 #define FRAME_WIDTH 400 //768
 #define FRAME_HEIGHT 350 //700
+#define MIN_TIME_IN 10
+#define MAX_DISTANCE 30
+#define DATABASE_PATH  "D:/IpCam/Database/ETSCameraClientCache.db3"
 

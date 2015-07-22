@@ -122,7 +122,8 @@ Controller::Controller(Size sz,int r, int c,double vh,double lr,double thresh_ex
 	_prior_height_variance(vh),
 	_frame_size(sz),
 	_bodyheight_learning_rate(lr),
-	_alpha_hitting_rate(4*TIME_WINDOW_SIZE),_beta_hitting_rate(5),
+	_alpha_hitting_rate(30),//4*TIME_WINDOW_SIZE
+	_beta_hitting_rate(5),
 	waitList((int)TIME_WINDOW_SIZE),
 	waitList_suspicious((int)(2*TIME_WINDOW_SIZE)),
 	_thresh_for_expert(thresh_expert)
@@ -231,7 +232,7 @@ void Controller::takeVoteForAvgHittingRate(list<EnsembleTracker*> _tracker_list)
 	{
 		Rect win = (*it)->getBodysizeResult();
 		// Chỉ đánh giá các đối tượng di chuyển
-		if ((*it)->getVel() > win.width*0.7)	
+		if ((*it)->getVel() > win.width*0.5) //0.7 	
 			_hit_record.recordVote((*it)->getAddNew());
 	}
 }
