@@ -15,5 +15,5 @@
 #define FRAME_HEIGHT 350 //700
 #define MIN_TIME_IN 10
 #define MAX_DISTANCE 30
-#define DATABASE_PATH  "D:/IpCam/Database/ETSCameraClientCache.db3"
-
+#define DATABASE_PATH  "D:/Data/IpCam/database/ETSCameraClientCache.db3"
+#define URL "D:/Data/IpCam/Video/CLIP_20150115-140156.mp4"

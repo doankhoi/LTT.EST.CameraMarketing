@@ -58,57 +58,20 @@ double WaitingList::calcDistance(Rect r1, Rect r2)
 void WaitingList::feed(Rect gt_win,double response)
 {
 	Point center((int)(gt_win.x+0.5*gt_win.width),(int)(gt_win.y+0.5*gt_win.height));
-	//for (list<Waiting>::iterator it=w_list.begin();it!=w_list.end();it++)
-	//{
-	//	double x1=center.x;
-	//	double y1=center.y;
-	//	double x2=(*it).center.x;
-	//	double y2=(*it).center.y;
-	//	double dis = sqrt(pow(x1-x2,2.0)+pow(y1-y2,2.0)); //*FRAME_RATE
-	//	double scale_ratio=(*it).currentWin.width/(double)gt_win.width;
-
-	//	if (dis < (*it).currentWin.width*2.3 /*&& scale_ratio < 1.1 && scale_ratio > 0.90*/)
-	//	{
-	//		(*it).currentWin=gt_win;
-	//		(*it).center=Point((int)(gt_win.x+0.5*gt_win.width),(int)(gt_win.y+0.5*gt_win.height));
-	//		(*it).accu++;
-	//		return;
-	//	}
-	//}
-
-	if(w_list.size() > 0)
+	for (list<Waiting>::iterator it=w_list.begin();it!=w_list.end();it++)
 	{
-		list<Waiting>::iterator itbegin = w_list.begin();
-		list<Waiting>::iterator itend = w_list.end();
-		double dis_min = INT_MIN;
-		int idx_min = -1;
-		int idx = 0;
-		for(; itbegin != itend; itbegin++)
+		double x1=center.x;
+		double y1=center.y;
+		double x2=(*it).center.x;
+		double y2=(*it).center.y;
+		double dis = sqrt(pow(x1-x2,2.0)+pow(y1-y2,2.0)); //*FRAME_RATE
+		double scale_ratio=(*it).currentWin.width/(double)gt_win.width;
+
+		if (dis < (*it).currentWin.width*2.3 /*&& scale_ratio < 1.1 && scale_ratio > 0.90*/)
 		{
-			double dis = calcDistance(gt_win, itbegin->currentWin);
-			if((dis < dis_min) && (dis <= MAX_DISTANCE))
-			{
-				dis_min = dis;
-				idx_min = idx; 
-			}
-
-			idx++;
-		}
-
-		if(idx_min != -1)
-		{
-			itbegin = w_list.begin();
-			idx = 0;
-			while((idx != idx_min) && (itbegin != itend))
-			{
-				itbegin++;
-				idx++;
-			}
-
-			itbegin->currentWin = gt_win;
-			itbegin->accu++;
-			itbegin->center = Point((int)(gt_win.x + 0.5*gt_win.width), (int)(gt_win.y + 0.5*gt_win.height));
-
+			(*it).currentWin=gt_win;
+			(*it).center=Point((int)(gt_win.x+0.5*gt_win.width),(int)(gt_win.y+0.5*gt_win.height));
+			(*it).accu++;
 			return;
 		}
 	}
@@ -311,6 +274,8 @@ TrakerManager::TrakerManager(Detector* detector,Mat& frame,double thresh_promoti
 		exit(-1);
 	}
 	//<<< Kết nối database 
+
+	dateCurrDb = getCurrentDate();
 }
 
 unsigned int TrakerManager::INDEX_CUSTOMER = 0;
@@ -404,6 +369,9 @@ void TrakerManager::doHungarianAlg(const vector<Rect>& detections) //good
 			{
 				if (matrix(i,j)==0)//matched
 				{
+					(*j_tl)->setIsAssign(true);
+					(*j_tl)->setMarkAssign(true);
+
 					(*j_tl)->addAppTemplate(_frame_set,shrinkWin);//Sẽ thay đổi result_temp nếu demoted
 					flag=true;
 
@@ -480,6 +448,9 @@ void TrakerManager::doHungarianAlg(const vector<Rect>& detections) //good
 			{
 				if (matrix(i,j)==0)//matched
 				{
+					(*j_tl)->setIsAssign(true);
+					(*j_tl)->setMarkAssign(true);
+
 					(*j_tl)->addAppTemplate(_frame_set,shrinkWin);
 					flag=true;
 					if ((*j_tl)->getIsNovice())
@@ -510,6 +481,13 @@ void TrakerManager::doHungarianAlg(const vector<Rect>& detections) //good
 
 void TrakerManager::doWork(Mat& frame)
 {
+	if(( getTime() >= 7 ) && (getCurrentDate() != dateCurrDb))
+	{
+		restart();
+	}
+
+	resetAssign();
+
 	Mat frame_resize;
 	resize(frame,frame_resize,Size((int)(frame.cols*HOG_DETECT_FRAME_RATIO),(int)(frame.rows*HOG_DETECT_FRAME_RATIO)));
 	_detector->detect(frame_resize);
@@ -604,8 +582,14 @@ void TrakerManager::doWork(Mat& frame)
 		i++;			
 	}
 
+	//Đánh dấu các phát hiện
+	resetMarkAssign();
+
 	// Gán các phát hiện tốt
 	doHungarianAlg(good_detections);	
+
+	//Cập nhật lại assign
+	remarkAssign();
 
 	//Tạo mới các track phát hiện là mới
 	vector<Rect> qualified = _controller.getQualifiedCandidates();
@@ -698,6 +682,24 @@ void TrakerManager::doWork(Mat& frame)
 	}
 	//>>>Hiện kết quả
 
+	list<EnsembleTracker*>::iterator itbegin = _tracker_list.begin();
+	list<EnsembleTracker*>::iterator itend = _tracker_list.end();
+	for(; itbegin != itend; )
+	{
+		/*if(!(*itbegin)->getIsAssign())
+			rectangle(frame, (*itbegin)->getResultLastNoSus(), Scalar(0,255,0), 3);*/
+
+		//Xóa tracker bị block
+		if(!(*itbegin)->getIsAssign() && !enviroment.isIn(convertRect2Point((*itbegin)->getResultLastNoSus())))
+		{
+			(*itbegin)->refcDec1();
+			(*itbegin)->dump();
+			_tracker_list.erase(itbegin++);
+			continue;
+		}
+
+		itbegin++;
+	}
 	// Sắp xếp trên số lượng template
 	_tracker_list.sort(TrakerManager::compareTraGroup);
 	//_frame_count++;
@@ -716,6 +718,11 @@ string TrakerManager::getCurrentDate()
 	return time_curr;
 }
 
+void TrakerManager::restart()
+{
+	sqlite3_close(db);
+	callPro();
+}
 
 string TrakerManager::getexepath()
 {
@@ -771,4 +778,44 @@ int TrakerManager::getTime()
 Point2d TrakerManager::convertRect2Point(const Rect& _rect)
 {
 	return Point2d(_rect.x + _rect.width*0.5, _rect.y + _rect.height*0.5);
+}
+
+void TrakerManager::resetAssign()
+{
+	list<EnsembleTracker*>::iterator itbegin = _tracker_list.begin();
+	list<EnsembleTracker*>::iterator itend = _tracker_list.end();
+
+	for( ; itbegin != itend; itbegin++)
+	{
+		if(!(*itbegin)->getIsAssign())
+		{
+			(*itbegin)->setResult((*itbegin)->getResultLastNoSus());
+			(*itbegin)->setResultBodySizeTemp((*itbegin)->getResultLastNoSus());
+			(*itbegin)->init_kf((*itbegin)->getResultLastNoSus());
+		}
+	}
+}
+
+void TrakerManager::resetMarkAssign()
+{
+	list<EnsembleTracker*>::iterator itbegin = _tracker_list.begin();
+	list<EnsembleTracker*>::iterator itend = _tracker_list.end();
+
+	for(; itbegin != itend ; itbegin++)
+	{
+		(*itbegin)->setMarkAssign(false);
+	}
+}
+
+void TrakerManager::remarkAssign()
+{
+	list<EnsembleTracker*>::iterator itbegin = _tracker_list.begin();
+	list<EnsembleTracker*>::iterator itend = _tracker_list.end();
+	
+	for(; itbegin != itend; itbegin++)
+	{
+		if(!(*itbegin)->getMarkAssign())
+			(*itbegin)->setIsAssign(false);
+	}
+	
 }

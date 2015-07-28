@@ -152,12 +152,12 @@ private:
 	{
 		return (c1->getTemplateNum()>c2->getTemplateNum()) ? true:false;
 	}
-
+	void resetAssign();
 	Controller _controller;
 	Mat* _frame_set;
 	//Danh sách theo vết
 	list<EnsembleTracker*> _tracker_list;
-	int _tracker_count;
+	unsigned int _tracker_count;
 	char _my_char;		
 	
 	Detector* _detector;
@@ -176,5 +176,7 @@ private:
 
 	Enviroment enviroment;
 	Point2d convertRect2Point(const Rect& _rect);
+	void resetMarkAssign();
+	void remarkAssign();
 };
 	

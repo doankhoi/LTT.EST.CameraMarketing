@@ -13,7 +13,7 @@ class EnsembleTracker
 {
 
 public:
-	EnsembleTracker(int id, Size body_size, double phi1=0.5, double phi2=1.5, double phi_max=4.0);		
+	EnsembleTracker(unsigned int id, Size body_size, double phi1=0.5, double phi2=1.5, double phi_max=4.0);		
 	~EnsembleTracker();	
 
 	//Biến đếm
@@ -109,8 +109,11 @@ public:
 	int getSuspensionCount(){return _novice_status_count;}
 	double getHistMatchScore(){return hist_match_score;}
 	Rect getResult(){return _result_temp;}
+	void setResult(Rect _rect){ this->_result_temp = _rect;}
 	Rect getBodysizeResult(){return _result_bodysize_temp;}	
-	
+	Rect getResultLastNoSus(){return _result_last_no_sus;}
+	void setResultLastNoSus(Rect _rect){ this->_result_last_no_sus = _rect;}
+	void setResultBodySizeTemp(Rect _temp){ this->_result_bodysize_temp = _temp;}
 	void updateKfCov(double body_width)
 	{
 		Mat m_temp =*(Mat_<float>(4,4)<<0.025,0,0,0,0,0.025,0,0,0,0,0.25,0,0,0,0,0.25);
@@ -123,13 +126,16 @@ public:
 	bool getCalcTime() { return _is_calc_time; }
 	void setCalcTime(bool _calc){ this->_is_calc_time = _calc;}
 	Rect getRectNearLast();
-private:
-
+	bool getIsAssign(){ return _is_assign;}
+	void setIsAssign(bool is_assign){ this->_is_assign = is_assign;}
+	bool getMarkAssign(){ return this->_mark_assign;}
+	void setMarkAssign(bool _mark) { this->_mark_assign = _mark;}
 	void init_kf(Rect win)
 	{
 		_kf.statePost =*(Mat_<float>(4,1)<<win.x+0.5*win.width,win.y+0.5*win.height,0,0);
 	}
 
+private:
 	void correct_kf(KalmanFilter& kf, Rect win)
 	{
 		kf.correct(*(Mat_<float>(2,1)<<win.x+0.5*win.width,win.y+0.5*win.height));
@@ -154,7 +160,7 @@ private:
 	// Các tham số mặc định phục vụ tính ngưỡng khoảng cách
 	double _phi1_,_phi2_,_phi_max_;
 
-	int _ID;
+	unsigned int _ID;
 	bool _is_novice;
 	int _novice_status_count;//Đếm số khung hình là novice
 	double _match_radius; //Bán kính vùng xét đối tượng
@@ -189,5 +195,8 @@ private:
 	time_t _time_in;
 	bool _is_calc_time;
 	//<<<Biến tính thời gian
+
+	bool _is_assign;
+	bool _mark_assign;
 };
 

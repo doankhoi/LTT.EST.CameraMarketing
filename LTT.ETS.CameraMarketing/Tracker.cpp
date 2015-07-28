@@ -39,7 +39,7 @@ inline bool compareTemplate(AppTemplate* t1, AppTemplate* t2)
 	return (t1->getScore() > t2->getScore()) ? true:false;
 }
 
-EnsembleTracker::EnsembleTracker(int id,Size body_size,double phi1,double phi2,double phi_max)
+EnsembleTracker::EnsembleTracker(unsigned int id,Size body_size,double phi1,double phi2,double phi_max)
 	:_refc(0),_is_dumped(false),
 	_phi1_(phi1),
 	_phi2_(phi2),
@@ -52,7 +52,9 @@ EnsembleTracker::EnsembleTracker(int id,Size body_size,double phi1,double phi2,d
 	_match_radius(0),
 	hist_match_score(0),
 	_added_new(true),
-	_record_idx(0)
+	_record_idx(0),
+	_is_assign(false),
+	_mark_assign(false)
 {
 	_retained_template=0;
 	//initialize kalman filter
