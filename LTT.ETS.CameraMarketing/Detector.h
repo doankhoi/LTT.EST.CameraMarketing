@@ -34,7 +34,6 @@ public:
 	virtual void detect(const Mat& frame);
 
 private:
-	//HOGDescriptor cpu_hog;
 	MultiLayerBGS *mbgs;
 	vector<float> detector;
 	vector<float> repsonse;//classifier response
