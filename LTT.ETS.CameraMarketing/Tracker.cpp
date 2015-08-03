@@ -205,6 +205,7 @@ void EnsembleTracker::calcConfidenceMap(const Mat* frame_set,Mat& occ_map)
 	//Dự đoán với kalman filter
 	_kf.predict();
 	Point center((int)_kf.statePre.at<float>(0,0),(int)_kf.statePre.at<float>(1,0));
+	
 	double w = _window_size.width/TRACKING_TO_BODYSIZE_RATIO;
 	double h = _window_size.height/TRACKING_TO_BODYSIZE_RATIO; 
 	h += 2*w;
@@ -290,9 +291,10 @@ void EnsembleTracker::track(const Mat* frame_set,Mat& occ_map)
 
 	if (getIsNovice()) //nếu là track chưa chắc chắn
 	{
-		_kf.errorCovPre.copyTo(_kf.errorCovPost);
-		_kf.statePost.at<float>(0,0)=(float)(_result_temp.x+0.5*_result_temp.width);
-		_kf.statePost.at<float>(1,0)=(float)(_result_temp.y+0.5*_result_temp.height);
+		init_kf(this->getResultLastNoSus());
+		//_kf.errorCovPre.copyTo(_kf.errorCovPost);
+		//_kf.statePost.at<float>(0,0)=(float)(_result_temp.x+0.5*_result_temp.width);
+		//_kf.statePost.at<float>(1,0)=(float)(_result_temp.y+0.5*_result_temp.height);
 	}
 	else
 	{		

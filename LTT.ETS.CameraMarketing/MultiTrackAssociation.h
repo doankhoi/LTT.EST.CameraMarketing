@@ -123,7 +123,7 @@ private:
 	HittingRecord _hit_record;
 	double _alpha_hitting_rate;
 	double _beta_hitting_rate;
-
+	Enviroment enviroment;
 	vector<Rect> _suspicious_rect_list;
 };
 

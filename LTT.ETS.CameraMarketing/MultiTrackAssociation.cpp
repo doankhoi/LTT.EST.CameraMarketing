@@ -208,12 +208,18 @@ void Controller::deleteObsoleteTracker(list<EnsembleTracker*>& _tracker_list)
 
 	for (list<EnsembleTracker*>::iterator it = _tracker_list.begin();it!=_tracker_list.end();)
 	{	
+		//Phát hiện chất lượng tồi
 		if((*it)->getHitFreq()*TIME_WINDOW_SIZE <= MAX(l-2*sqrt(l),0))
 		{
-			(*it)->refcDec1();
-			(*it)->dump(); //đẩy vào trash list
-			_tracker_list.erase(it++);
-			continue;
+			Rect rect = (*it)->getResultLastNoSus();
+			//Nếu trong cửa hàng thì chưa xóa
+			if(!enviroment.isIn(Point2d(rect.x + 0.5*rect.width, rect.y + 0.5*rect.height)))
+			{
+				(*it)->refcDec1();
+				(*it)->dump(); //đẩy vào trash list
+				_tracker_list.erase(it++);
+				continue;
+			}
 		}		
 		else if (!(*it)->getIsNovice() && (*it)->getTemplateNum() < _thresh_for_expert)
 		{
