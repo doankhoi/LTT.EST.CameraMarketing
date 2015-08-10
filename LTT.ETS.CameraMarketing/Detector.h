@@ -4,7 +4,7 @@
 
 #include "Util.h"
 #include "Parameter.h"
-
+#include "WatershedSegmenter.h"
 #define HOG 1
 #define XML 2
 
@@ -34,8 +34,10 @@ public:
 	virtual void detect(const Mat& frame);
 
 private:
-	//HOGDescriptor cpu_hog;
 	MultiLayerBGS *mbgs;
+	WatershedSegmenter segmenter;
+	cv::Mat result;
+	cv::Mat result_egde;
 	vector<float> detector;
 	vector<float> repsonse;//classifier response
 };

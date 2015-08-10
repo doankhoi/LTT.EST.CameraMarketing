@@ -189,8 +189,8 @@ vector<int> Controller::filterDetection(vector<Rect> detction_bodysize)
 
 void Controller::takeVoteForAvgHittingRate(list<EnsembleTracker*> _tracker_list)
 {
-	double vote_count=0;
-	vector<double> hitting;
+	//double vote_count=0;
+	//vector<double> hitting;
 	for (list<EnsembleTracker*>::iterator it=_tracker_list.begin();it!=_tracker_list.end();it++)
 	{
 		Rect win = (*it)->getBodysizeResult();

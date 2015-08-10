@@ -301,6 +301,7 @@ void EnsembleTracker::track(const Mat* frame_set,Mat& occ_map)
 		// cập nhật lại vị trí
 		_result_last_no_sus = _result_temp;
 		correct_kf(_kf,_result_temp);
+		//init_kf(this->getResultLastNoSus());
 	}	
 }
 
