@@ -43,48 +43,46 @@ void HogDetector::detect(const Mat& frame)
 	mbgs->process(frame, fore, back);
 
 	//Segmentation
-	cv::Mat dist;
-	cv::distanceTransform(fore, dist, CV_DIST_L2, 3);
-	cv::normalize(dist, dist, 0, 1.0, cv::NORM_MINMAX);
-	cv::threshold(dist, dist, 0.5, 1.0, CV_THRESH_BINARY);
-	cv::Mat dist_8u;
-	double minVal, maxVal;
-	cv::minMaxLoc(dist, &minVal, &maxVal);
-	dist.convertTo(dist_8u, CV_8U, 255.0/(maxVal - minVal), -minVal*255.0/(maxVal-minVal));
-	cv::findContours(dist_8u, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+	//cv::Mat dist;
+	//cv::distanceTransform(fore, dist, CV_DIST_L2, 3);
+	//cv::normalize(dist, dist, 0, 1.0, cv::NORM_MINMAX);
+	//cv::threshold(dist, dist, 0.5, 1.0, CV_THRESH_BINARY);
+	//cv::Mat dist_8u;
+	//double minVal, maxVal;
+	//cv::minMaxLoc(dist, &minVal, &maxVal);
+	//dist.convertTo(dist_8u, CV_8U, 255.0/(maxVal - minVal), -minVal*255.0/(maxVal-minVal));
+	//cv::findContours(dist_8u, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 
-	//>>>Đánh dấu các đối tượng
-	cv::Mat markers = cv::Mat::zeros(dist.size(), CV_8U);
-	for(int i = 0; i < contours.size(); i++)
-	{
-		cv::drawContours(markers, contours, i , Scalar::all(i+20), -1);
-	}
-	//<<<Đánh dấu các đối tượng
+	////>>>Đánh dấu các đối tượng
+	//cv::Mat markers = cv::Mat::zeros(dist.size(), CV_8U);
+	//for(int i = 0; i < contours.size(); i++)
+	//{
+	//	cv::drawContours(markers, contours, i , Scalar::all(i+20), -1);
+	//}
+	////<<<Đánh dấu các đối tượng
 
-	//>>>Đánh dấu background
-	cv::circle(markers, Point(5, 5), 3, Scalar(255, 255, 255), -1);
-	//<<<Đánh dấu background
-	
-	imshow("marker", markers);
-	////>>>Segmentation foreground
-	//cv::Mat fg;
-	//cv::erode(fore, fg, cv::Mat(), Point(-1,-1), 3);
-	////<<<Segmentation foreground
+	////>>>Đánh dấu background
+	//cv::circle(markers, Point(5, 5), 3, Scalar(255, 255, 255), -1);
+	////<<<Đánh dấu background
 
-	////>>>Segmentation background
-	//cv::Mat bg;
-	//cv::dilate(fore, bg, cv::Mat(), Point(-1, -1), 3);
-	//cv::threshold(bg, bg, 1, 128, CV_THRESH_BINARY_INV);
-	////<<<Segmentation background
+	//>>>Segmentation foreground
+	cv::Mat fg;
+	cv::erode(fore, fg, cv::Mat(), Point(-1,-1), 3);
+	//<<<Segmentation foreground
 
-	//cv::Mat markers(fore.size(), CV_8U, cv::Scalar(0));
-	//markers = bg + fg;
+	//>>>Segmentation background
+	cv::Mat bg;
+	cv::dilate(fore, bg, cv::Mat(), Point(-1, -1), 3);
+	cv::threshold(bg, bg, 1, 128, CV_THRESH_BINARY_INV);
+	//<<<Segmentation background
+
+	cv::Mat markers(fore.size(), CV_8U, cv::Scalar(0));
+	markers = bg + fg;
 
 	segmenter.setMarkers(markers);
 	result = segmenter.process(frame);
 	cv::imshow("result", result);
 	cv::Canny(result, result_egde, 30, 30*3, 3);
-
 	findContours(result_egde, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, Point());
 
 	this->detection.clear();
@@ -102,7 +100,6 @@ void HogDetector::detect(const Mat& frame)
 		}
 	}
 	//<<<Su dung tru nen
-	//cpu_hog.detectMultiScale(frame, detection, response, 0.0, Size(8,8),Size(0, 0), 1.05, 2);
 
 	//Correct lai kich thuoc
 	for (vector<Rect>::iterator it = detection.begin(); it < detection.end(); it++)

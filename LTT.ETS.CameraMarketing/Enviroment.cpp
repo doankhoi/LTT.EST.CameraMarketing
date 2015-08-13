@@ -10,9 +10,9 @@ Enviroment::Enviroment()
 	float SCALE_WIDTH = 0.2;
 
 	//Bốn điểm danh giới
-	BOTTOM_LEFT = cv::Point( static_cast<int>(FRAME_WIDTH* SCALE_WIDTH)- 30, static_cast<int> (FRAME_HEIGHT * SCALE_HEIGHT));
+	BOTTOM_LEFT = cv::Point( static_cast<int>(FRAME_WIDTH* SCALE_WIDTH)- 30, static_cast<int> (FRAME_HEIGHT * SCALE_HEIGHT) + 15);
 
-	BOTTOM_RIGHT = cv::Point(FRAME_WIDTH - static_cast<int>(static_cast<int>(FRAME_WIDTH* SCALE_WIDTH)), static_cast<int> (FRAME_HEIGHT * SCALE_HEIGHT));
+	BOTTOM_RIGHT = cv::Point(FRAME_WIDTH - static_cast<int>(static_cast<int>(FRAME_WIDTH* SCALE_WIDTH)), static_cast<int> (FRAME_HEIGHT * SCALE_HEIGHT) + 15);
 
 	TOP_LEFT = cv::Point(static_cast<int>(FRAME_WIDTH* SCALE_WIDTH)-30,static_cast<int>(FRAME_HEIGHT * 0.05));
 	TOP_RIGHT = cv::Point(FRAME_WIDTH - static_cast<int>(static_cast<int>(FRAME_WIDTH* SCALE_WIDTH)), static_cast<int>(FRAME_HEIGHT * 0.05));

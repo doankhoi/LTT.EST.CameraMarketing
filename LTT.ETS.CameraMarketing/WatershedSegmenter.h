@@ -12,7 +12,6 @@ public:
 	void setMarkers(const cv::Mat& _markers)
 	{
 		_markers.convertTo(markers, CV_32S);
-		cv::imshow("after", markers);
 	}
 
 	cv::Mat process(const cv::Mat& image)

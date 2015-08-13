@@ -58,7 +58,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		char c = waitKey(1);
 		enviroment.drawEnviroment(frame);
 
-		if(cv::waitKey(20) > 0)
+		if(cv::waitKey(1) > 0)
 			break;
 	}
 
