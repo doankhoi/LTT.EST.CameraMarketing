@@ -150,20 +150,19 @@ vector<int> Controller::filterDetection(vector<Rect> detction_bodysize)
 		for (size_t j=0;j < _suspicious_rect_list.size();j++)
 		{
 			//Tính tỉ lệ phần trăm overide
-			//if (getRectDist(_suspicious_rect_list[j],detction_bodysize[i],OVERLAP)<0.5)
-			//{
-			//	ret.push_back(BAD); //Đánh dấu phát hiện tồi
-			//	flag = true;
-			//	break;
-			//}
-
+			if (getRectDist(_suspicious_rect_list[j],detction_bodysize[i],OVERLAP)<0.5)
+			{
+				ret.push_back(BAD); //Đánh dấu phát hiện tồi
+				flag = true;
+				break;
+			}
 			//Tính tỉ lệ phần trăm trùng cao
-			if(getRectDist(_suspicious_rect_list[j], detction_bodysize[i], OVERLAP) > 0.5)
+			/*if(getRectDist(_suspicious_rect_list[j], detction_bodysize[i], OVERLAP) > 0.5)
 			{
 				ret.push_back(GOOD);
 				flag = true;
 				break;
-			}
+			}*/
 		}
 
 		if (flag)
@@ -189,8 +188,6 @@ vector<int> Controller::filterDetection(vector<Rect> detction_bodysize)
 
 void Controller::takeVoteForAvgHittingRate(list<EnsembleTracker*> _tracker_list)
 {
-	//double vote_count=0;
-	//vector<double> hitting;
 	for (list<EnsembleTracker*>::iterator it=_tracker_list.begin();it!=_tracker_list.end();it++)
 	{
 		Rect win = (*it)->getBodysizeResult();
@@ -479,7 +476,7 @@ void TrakerManager::doHungarianAlg(const vector<Rect>& detections) //good
 	//Khởi tạo vị trí
 	else if (dt_size>0)
 	{
-		for (int i=0;i<dt_size;i++)
+		for (int i=0;i < dt_size;i++)
 			_controller.waitList.feed(scaleWin(detection_left[i],BODYSIZE_TO_DETECTION_RATIO),1.0);
 	}
 }
@@ -793,12 +790,29 @@ void TrakerManager::resetAssign()
 
 	for( ; itbegin != itend; itbegin++)
 	{
-		if(!(*itbegin)->getIsAssign())
-		{
+		//if(!(*itbegin)->getIsAssign())
+		//{
 			(*itbegin)->setResult((*itbegin)->getResultLastNoSus());
 			(*itbegin)->setResultBodySizeTemp((*itbegin)->getResultLastNoSus());
 			(*itbegin)->init_kf((*itbegin)->getResultLastNoSus());
+		//}
+		//else
+		//{
+		//	(*itbegin)->init_kf((*itbegin)->getResultLastNoSus()); //TEST
+		//}
+
+		//>>>Kiểm tra nếu trong cửa hàng thì gán tính time
+		if(enviroment.isIn(convertRect2Point((*itbegin)->getResultLastNoSus())))
+		{
+			if(!(*itbegin)->getCalcTime())
+			{
+				(*itbegin)->setCalcTime(true);
+				time_t curr;
+				time(&curr);
+				(*itbegin)->setTimeIn(curr);
+			}
 		}
+		//<<<Kiểm tra nếu trong cửa hàng thì gán tính time
 	}
 }
 

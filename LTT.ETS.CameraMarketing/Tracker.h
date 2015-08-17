@@ -80,10 +80,12 @@ public:
 		scale-=1;
 		Rect win = _result_history.back();//_result_history.back();
 
-		if (!getIsNovice()) //Không phải là novice
-			rectangle(frame,scaleWin(win,1/TRACKING_TO_BODYSIZE_RATIO), COLOR(_ID),2);
-		else
-			rectangle(frame,scaleWin(win,1/TRACKING_TO_BODYSIZE_RATIO), COLOR(_ID),1);
+		cv::circle(frame, Point((int)(win.x + 0.5*win.width), (int)(win.y + 0.5*win.height)), 3 ,Scalar( 123, 255, 0), -1);
+
+		//if (!getIsNovice()) //Không phải là novice
+		//	rectangle(frame,scaleWin(win,1/TRACKING_TO_BODYSIZE_RATIO), COLOR(_ID),2);
+		//else
+		//	rectangle(frame,scaleWin(win,1/TRACKING_TO_BODYSIZE_RATIO), COLOR(_ID),1);
 	}
 
 	void drawAssRadius(Mat& frame)

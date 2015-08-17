@@ -149,10 +149,10 @@ void EnsembleTracker::updateNeighbors(
 			}
 		}
 
-	/*	if (alreadyFound)
+		if (alreadyFound)
 		{
 			continue;
-		}*/
+		}
 
 		Rect r =(*it)->getBodysizeResult();
 		Point c((int)(r.x+0.5*r.width),(int)(r.y+0.5*r.height));
@@ -266,7 +266,7 @@ void EnsembleTracker::track(const Mat* frame_set,Mat& occ_map)
 	//Cập nhật cờ nếu là track được match
 	setAddNew(false);
 
-	_kf.predict();
+	//_kf.predict(); //TEST
 
 	//Tăng biến đếm nếu là novicce
 	if (getIsNovice())
@@ -300,8 +300,8 @@ void EnsembleTracker::track(const Mat* frame_set,Mat& occ_map)
 	{		
 		// cập nhật lại vị trí
 		_result_last_no_sus = _result_temp;
-		correct_kf(_kf,_result_temp);
-		//init_kf(this->getResultLastNoSus());
+		//correct_kf(_kf,_result_temp);
+		init_kf(this->getResultLastNoSus());
 	}	
 }
 

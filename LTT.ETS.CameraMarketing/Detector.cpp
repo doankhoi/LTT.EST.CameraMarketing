@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Detector.h"
 #define MIN_AREA_PERSON 125
-
+#define MAX_AREA_PERSON 800
 Detector::~Detector(void)
 {
 }
@@ -86,6 +86,7 @@ void HogDetector::detect(const Mat& frame)
 	findContours(result_egde, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, Point());
 
 	this->detection.clear();
+	
 	if( contours.size() > 0)
 	{
 		for( int i = 0; i < contours.size(); i++ )
@@ -95,8 +96,25 @@ void HogDetector::detect(const Mat& frame)
 			//nếu đối tượng quá nhỏ bỏ qua
 			if((area > MIN_AREA_PERSON) && (area > (r.width*r.height) / 4))
 			{
-				this->detection.push_back(r);
+				if( area < MAX_AREA_PERSON)//Nếu nhỏ hơn max person.
+					this->detection.push_back(r);
+				else //Tách hai người gộp lại
+				{
+					int rx = r.x; 
+					int ry = r.y;
+					int rwidth = r.width;
+					int rheight = r.height;
+					int r1x = rx - 5;
+					int r1y = ry - 5;
+					int r1width = (int)(rwidth - 10);
+					int r1height = (int)(rheight - 10);
+					cv::Rect r1(r1x, r1y, r1width, r1height);
+					cv::Rect r2(r1x - 3, ry -3, r1width + 3, r1height + 3);
+					this->detection.push_back(r1);
+					this->detection.push_back(r2);
+				}
 			}
+
 		}
 	}
 	//<<<Su dung tru nen

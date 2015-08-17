@@ -17,4 +17,5 @@
 #define MAX_DISTANCE 30
 #define DATABASE_PATH  "D:/IpCam/Database/ETSCameraClientCache.db3"
 //#define URL "D:/IpCam/Video/CLIP_20150122-141303.mp4"
-#define URL "http://tendo5464:CZDmQQeH08@www.i-mcs-ytd.com:57251/video3.mjpg"
+#define URL "D:/IpCam/Video/CLIP_20150227-114125.mp4"
+//#define URL "D:/IpCam/Video/CLIP_20150116-140203.mp4"
