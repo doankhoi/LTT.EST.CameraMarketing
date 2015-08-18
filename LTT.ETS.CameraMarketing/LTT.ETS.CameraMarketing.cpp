@@ -54,12 +54,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		mTrack.doWork(frame);
 		imshow("multiTrack", frame);
 		reader->readImg(frame);
-
-		char c = waitKey(1);
 		enviroment.drawEnviroment(frame);
-
-		if(cv::waitKey(1) > 0)
-			break;
+		waitKey(1);
 	}
 
 	if(reader != NULL)

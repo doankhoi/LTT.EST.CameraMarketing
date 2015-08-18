@@ -25,6 +25,7 @@ public:
 	cv::Point BOTTOM_LEFT;
 	cv::Point BOTTOM_RIGHT;
 	std::vector<cv::Point> POLY_POINT_OF_ROI;
+	int THRESHOLD_Y_ACCEPT;
 	//<<<Bốn điểm của vùng cửa hàng
 
 	//>>> Vùng ảnh có thể gây nhiều lỗi

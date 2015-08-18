@@ -619,7 +619,7 @@ void TrakerManager::doWork(Mat& frame)
 	}
 
 	//>>>Hiện kết quả
-	for (list<EnsembleTracker*>::iterator i=_tracker_list.begin();i!=_tracker_list.end();i++)
+	for (list<EnsembleTracker*>::iterator i=_tracker_list.begin();i!=_tracker_list.end(); )
 	{
 		(*i)->registerTrackResult();
 
@@ -650,7 +650,8 @@ void TrakerManager::doWork(Mat& frame)
 			//Ra ngoài cửa hàng
 			if(!enviroment.isIn(convertRect2Point(result_temp)) && enviroment.isIn(convertRect2Point(near_last)))
 			{
-				if((*i)->getCalcTime())
+				Point2d curr_p = convertRect2Point(result_temp);
+				if((*i)->getCalcTime() && (curr_p.y >= enviroment.THRESHOLD_Y_ACCEPT ))//Được tính thời gian và nằm trong phía dưới cửa hàng
 				{
 					(*i)->setCalcTime(false);
 					time_t current_time;
@@ -670,6 +671,13 @@ void TrakerManager::doWork(Mat& frame)
 						connectDb.insert_TB_CAM_MARKET_CSMR(this->db, SHOP_CD, strCamDate, code_customer, strTimeIn, strTimeOut, time_in);
 					}
 				}
+				else //Ngược lại xóa tracker lỗi
+				{
+					(*i)->refcDec1();
+					(*i)->dump();
+					_tracker_list.erase(i++);
+					continue;
+				}
 			}
 
 			// Vào trong cửa hàng.
@@ -682,6 +690,8 @@ void TrakerManager::doWork(Mat& frame)
 			}
 			//<<< Tính thời gian
 		}
+
+		i++;
 	}
 	//>>>Hiện kết quả
 

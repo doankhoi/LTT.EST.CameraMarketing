@@ -114,7 +114,6 @@ void HogDetector::detect(const Mat& frame)
 					this->detection.push_back(r2);
 				}
 			}
-
 		}
 	}
 	//<<<Su dung tru nen

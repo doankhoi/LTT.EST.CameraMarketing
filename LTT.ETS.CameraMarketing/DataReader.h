@@ -35,23 +35,28 @@ class VideoReader:public SeqReader
 public:
 	VideoReader(const string filename)
 	{
+		this->filename = filename;
 		capture.open(filename);
 		if(!capture.isOpened())
 		{
-			cout << "Loi khoi tao capture" << endl;
-			exit(-1);
+			while(!capture.open(filename));
 		}
 	}
 
 	virtual void readImg(Mat& frame)
 	{	
 		capture >> frame;
+		if(frame.empty())
+		{
+			while(!capture.open(filename));
+		}
 		enviroment.resizeFrame(frame);
 	}
 
 private:
 	VideoCapture capture;
 	Enviroment enviroment;
+	string filename;
 };
 
 #define  ENCODING "UTF-8"
