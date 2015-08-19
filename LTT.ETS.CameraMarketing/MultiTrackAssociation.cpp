@@ -67,7 +67,7 @@ void WaitingList::feed(Rect gt_win,double response)
 		double dis = sqrt(pow(x1-x2,2.0)+pow(y1-y2,2.0)); //*FRAME_RATE
 		double scale_ratio=(*it).currentWin.width/(double)gt_win.width;
 
-		if (dis < (*it).currentWin.width*2.3 /*&& scale_ratio < 1.1 && scale_ratio > 0.90*/)
+		if (dis < (*it).currentWin.width*3 /*&& scale_ratio < 1.1 && scale_ratio > 0.90*/) //rate 2.3 TEST
 		{
 			(*it).currentWin=gt_win;
 			(*it).center=Point((int)(gt_win.x+0.5*gt_win.width),(int)(gt_win.y+0.5*gt_win.height));
@@ -343,7 +343,7 @@ void TrakerManager::doHungarianAlg(const vector<Rect>& detections) //good
 					{
 						double dis_to_last=(*j_tl)->getDisToLast(shrinkWin);
 
-						if (dis_to_last/(((double)(*j_tl)->getSuspensionCount()+1)/(FRAME_RATE*5/7)+0.5)<((*j_tl)->getBodysizeResult().width*1.0))
+						if (dis_to_last/(((double)(*j_tl)->getSuspensionCount()+1)/(FRAME_RATE*5/7)+0.5)<((*j_tl)->getBodysizeResult().width*1.50))//TEST
 						{								
 							matrix(i,j)=d;//*h;
 						}
@@ -538,15 +538,6 @@ void TrakerManager::doWork(Mat& frame)
 	_controller.deleteObsoleteTracker(_tracker_list);
 	_controller.calcSuspiciousArea(_tracker_list);
 
-	//Vẽ các phát hiện
-	//for (size_t it = 0;it < detections.size();it++)
-	//{
-	//	if (det_filter[it] != BAD)
-	//		rectangle(frame,detections[it],Scalar(0,0,255),2);
-	//	else
-	//		rectangle(frame,detections[it],Scalar(0,0,255),1); //Phát hiện tồi	
-	//}
-
 	//Tracking đối với mỗi track và quản lý các template của nó
 	for (list<EnsembleTracker*>::iterator i = _tracker_list.begin(); i != _tracker_list.end();)
 	{	
@@ -621,6 +612,13 @@ void TrakerManager::doWork(Mat& frame)
 	//>>>Hiện kết quả
 	for (list<EnsembleTracker*>::iterator i=_tracker_list.begin();i!=_tracker_list.end(); )
 	{
+		//>>>Debug
+		//if((*i)->getIsNovice())
+		//{
+		//	cv::rectangle(frame, (*i)->getResultHistory().back(), Scalar(255,0,0),5);
+		//}
+		//<<<Debug
+
 		(*i)->registerTrackResult();
 
 		if (!(*i)->getIsNovice())
@@ -633,14 +631,25 @@ void TrakerManager::doWork(Mat& frame)
 		{				
 			if (!(*i)->getIsNovice() || ((*i)->getIsNovice() && (*i)->compareHisto(bgr,(*i)->getBodysizeResult()) > HIST_MATCH_THRESH_CONT))
 			{
+				//>>>Debug
+				if(!(*i)->getIsNovice())
+					cv::rectangle(frame, (*i)->getResultHistory().back(), Scalar(255,0,0),1);
+				else
+					cv::rectangle(frame, (*i)->getResultHistory().back(), Scalar(0,255,0),3);
+				//<<<Debug
+
 				(*i)->drawResult(frame,1/TRACKING_TO_BODYSIZE_RATIO);
 
 				Rect win = (*i)->getResultHistory().back();
-				Point tx(win.x, win.y-1);
-				char buff[10];
-				sprintf(buff,"%d",(*i)->getID());
-				string s = buff;
-				putText(frame,s,tx,FONT_HERSHEY_PLAIN , 1.5,COLOR((*i)->getID()),2);
+				Point center((int)(win.x + 0.5*win.width), (int)(win.y + 0.5*win.height));
+				if(enviroment.isIn(center))
+				{
+					Point tx(win.x, win.y-1);
+					char buff[10];
+					sprintf(buff,"%d",(*i)->getID());
+					string s = buff;
+					putText(frame,s,tx,FONT_HERSHEY_PLAIN , 1.5,COLOR((*i)->getID()),2);
+				}
 			}	
 
 			//>>> Tính thời gian 

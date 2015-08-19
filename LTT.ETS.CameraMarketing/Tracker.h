@@ -4,6 +4,7 @@
 #include "AppTemplate.h"
 #include "Parameter.h"
 #include "Util.h"
+#include "Enviroment.h"
 #include <time.h>
 
 using namespace cv;
@@ -79,13 +80,9 @@ public:
 	{
 		scale-=1;
 		Rect win = _result_history.back();//_result_history.back();
-
-		cv::circle(frame, Point((int)(win.x + 0.5*win.width), (int)(win.y + 0.5*win.height)), 3 ,Scalar( 123, 255, 0), -1);
-
-		//if (!getIsNovice()) //Không phải là novice
-		//	rectangle(frame,scaleWin(win,1/TRACKING_TO_BODYSIZE_RATIO), COLOR(_ID),2);
-		//else
-		//	rectangle(frame,scaleWin(win,1/TRACKING_TO_BODYSIZE_RATIO), COLOR(_ID),1);
+		Point center((int)(win.x + 0.5*win.width), (int)(win.y + 0.5*win.height));
+		if(enviroment.isIn(center))
+			cv::circle(frame, center, 3 ,Scalar( 123, 255, 0), -1);
 	}
 
 	void drawAssRadius(Mat& frame)
@@ -108,6 +105,7 @@ public:
 	}
 
 	bool getIsNovice(){return _is_novice;}
+	void setIsNovice(bool novice){ this->_is_novice = novice;}
 	int getSuspensionCount(){return _novice_status_count;}
 	double getHistMatchScore(){return hist_match_score;}
 	Rect getResult(){return _result_temp;}
@@ -200,5 +198,6 @@ private:
 
 	bool _is_assign;
 	bool _mark_assign;
+	Enviroment enviroment;
 };
 

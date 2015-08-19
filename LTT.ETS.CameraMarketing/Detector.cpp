@@ -65,24 +65,26 @@ void HogDetector::detect(const Mat& frame)
 	//cv::circle(markers, Point(5, 5), 3, Scalar(255, 255, 255), -1);
 	////<<<Đánh dấu background
 
-	//>>>Segmentation foreground
-	cv::Mat fg;
-	cv::erode(fore, fg, cv::Mat(), Point(-1,-1), 3);
-	//<<<Segmentation foreground
+	////>>>Segmentation foreground
+	//cv::Mat fg;
+	//cv::erode(fore, fg, cv::Mat(), Point(-1,-1), 3);
+	////<<<Segmentation foreground
 
-	//>>>Segmentation background
-	cv::Mat bg;
-	cv::dilate(fore, bg, cv::Mat(), Point(-1, -1), 3);
-	cv::threshold(bg, bg, 1, 128, CV_THRESH_BINARY_INV);
-	//<<<Segmentation background
+	////>>>Segmentation background
+	//cv::Mat bg;
+	//cv::dilate(fore, bg, cv::Mat(), Point(-1, -1), 3);
+	//cv::threshold(bg, bg, 1, 128, CV_THRESH_BINARY_INV);
+	////<<<Segmentation background
 
-	cv::Mat markers(fore.size(), CV_8U, cv::Scalar(0));
-	markers = bg + fg;
+	//cv::Mat markers(fore.size(), CV_8U, cv::Scalar(0));
+	//markers = bg + fg;
 
-	segmenter.setMarkers(markers);
-	result = segmenter.process(frame);
-	cv::imshow("result", result);
-	cv::Canny(result, result_egde, 30, 30*3, 3);
+	//segmenter.setMarkers(markers);
+	//result = segmenter.process(frame);
+	//cv::imshow("result", result);
+	//cv::Canny(result, result_egde, 30, 30*3, 3);
+	cv::Canny(fore, result_egde, 30, 30*3, 3);
+	cv::imshow("result_egde", result_egde);
 	findContours(result_egde, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, Point());
 
 	this->detection.clear();
